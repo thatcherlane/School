@@ -14,8 +14,8 @@ parse grammar
     (4)     	  	|   	“print” ( STRLIT | expr )
     (5)     	  	|   	“input” lvalue
     (6)     	  	|   	“set” lvalue “:” expr
-    (7)     	  	|   	“sub” SUBID stmt_list “end”
-    (8)     	  	|   	“call” SUBID
+    (7)     	  	|   	“sub” ID stmt_list “end”
+    (8)     	  	|   	“call” ID
     (9)     	  	|   	“if” expr stmt_list { “elseif” expr stmt_list } [ “else” stmt_list ] “end”
     (10)     	  	|   	“while” expr stmt_list “end”
     (11)     	expr 	  →   	comp_expr { ( “&&” | “||” ) comp_expr }
@@ -28,11 +28,11 @@ parse grammar
     (18)     	  	|   	NUMLIT
     (19)     	  	|   	( “true” | “false” )
     (20)     	  	|   	lvalue
-    (21)     	lvalue 	  →   	VARID [ “[” expr “]” ]
+    (21)     	lvalue 	  →   	ID [ “[” expr “]” ]
 lex categories
     lexit.KEY = 1
-    lexit.VARID = 2
-    lexit.SUBID = 3
+    lexit.ID = 2
+    lexit.ID = 3
     lexit.NUMLIT = 4
     lexit.STRLIT = 5
     lexit.OP = 6
@@ -44,21 +44,21 @@ parseit = {}
 lexit = require "lexit"
 
 local STMT_LIST   = 1
-local CR_STMT     = 2
+local INPUT_STMT  = 2
 local PRINT_STMT  = 3
-local INPUT_STMT  = 4
-local SET_STMT    = 5
-local SUB_STMT    = 6
-local CALL_STMT   = 7
-local IF_STMT     = 8
-local WHILE_STMT  = 9
-local BIN_OP      = 10
-local UN_OP       = 11
-local NUMLIT_VAL  = 12
-local STRLIT_VAL  = 13
+local FUNC_STMT   = 4
+local CALL_FUNC   = 5
+local IF_STMT     = 6
+local WHILE_STMT  = 7
+local ASSN_STMT   = 8
+local CR_OUT      = 9
+local STRLIT_OUT  = 10
+local BIN_OP      = 11
+local UN_OP       = 12
+local NUMLIT_VAL  = 13
 local BOOLLIT_VAL = 14
-local VARID_VAL   = 15
-local ARRAY_REF   = 16
+local SIMPLE_VAR  = 15
+local ARRAY_VAR   = 16
 
 local iter
 local state
@@ -68,11 +68,24 @@ local retCat
 local str
 local cat
 
+-- matchString
+-- Given string, see if current lexeme string form is equal to it. If
+-- so, then advance to next lexeme & return true. If not, then do not
+-- advance, return false.
+-- Function init must be called before this function is called.
+local function matchString(s)
+    if lexstr == s then
+        advance()
+        return true
+    else
+        return false
+    end
+end
+
 
 local function advanceLexer()
 
-    if str == "]" or str == ")" or str == "true" or str == "false"
-        or cat == lexit.VARID or cat == lexit.NUMLIT then
+    if str == "]" or str == ")" or str == "true" or str == "false" or cat == lexit.ID or cat == lexit.NUMLIT then
         lexit.preferOp()
     end
 
@@ -124,14 +137,15 @@ end
 
 
     function parse_lvalue()
-        local good, ast, newast
+        local good, ast, newast, tempstr
 
         good = true
-         ast = {VARID_VAL, str}
-            advanceLexer()
+        ast = {SIMPLE_VAR, str}
+        tempstr = str
+        advanceLexer()
 
             if str == "[" then
-
+                ast = tempstr
                 advanceLexer()
 
                 good, newast = parse_expr()
@@ -139,7 +153,8 @@ end
                     return false, nil
                 end
                 advanceLexer()
-                ast = {ARRAY_REF, ast, newast}
+
+                ast = {ARRAY_VAR, ast, newast}
             end
 
             return good, ast
@@ -196,7 +211,7 @@ end
             return true, ast
         end
 
-        if cat == lexit.VARID then
+        if cat == lexit.ID then
             good, ast = parse_lvalue()
             if not good then
                 return false, nil
@@ -306,28 +321,28 @@ end
 
 
     function parse_expr()
-        local good, ast, newast, save
+      local good, ast, saveop, newast
 
-        good, ast = parse_comp_expr()
-        if not good then
-            return false, nil
-        end
+      good, ast = parse_comp_expr()
+      if not good then
+          return false, nil
+      end
 
-        while str == "&&" or str == "||" do
+      while true do
+          saveop = lexstr
+          if not matchString("&&") and not matchString("||") then
+              break
+          end
 
-                save = str
-                advanceLexer()
+          good, newast = parse_comp_expr()
+          if not good then
+              return false, nil
+          end
 
-                good, newast = parse_comp_expr()
-                if not good then
-                    return false, nil
-                end
+          ast = { { BIN_OP, saveop}, ast, newast }
+    end
 
-                ast = {{BIN_OP, save}, ast, newast}
-        end
-
-
-        return good, ast
+        return true, ast
     end
 
 
@@ -337,18 +352,18 @@ end
 
         if cat == lexit.KEY then
 
-            if str == "cr" then
-
-                advanceLexer()
-                return true, {CR_STMT}
-            elseif str == "print" then
+            -- if str == "cr" then
+            --
+            --     advanceLexer()
+            --     return true, {CR_STMT}
+            if str == "print" then
 
                 advanceLexer()
 
                 if cat == lexit.STRLIT then
                     save = str
                     advanceLexer()
-                    return true, {PRINT_STMT, {STRLIT_VAL, save}}
+                    return true, {PRINT_STMT, {STRLIT_OUT, save}}
                 end
 
                 good, ast = parse_expr()
@@ -361,7 +376,7 @@ end
 
                 advanceLexer()
 
-                if cat == lexit.VARID then
+                if cat == lexit.ID then
 
                     good, ast = parse_lvalue()
                     if not good then
@@ -373,40 +388,40 @@ end
                     --input with no variable
                     return false, nil
                 end
-            elseif str == "set" then
+            -- elseif str == "set" then
+            --
+            --     advanceLexer()
+            --
+            --     if cat == lexit.ID then
+            --
+            --         good, ast = parse_lvalue()
+            --         if not good then
+            --             return false, nil
+            --         end
+            --
+            --         if str == ":" then
+            --
+            --             advanceLexer()
+            --
+            --             good, newast = parse_expr()
+            --             if not good then
+            --                 return false, nil
+            --             end
+            --
+            --             return good, {SET_STMT, ast, newast}
+            --         else
+            --             --set with no : (assignment op)
+            --             return false, nil
+            --         end
+            --      else
+            --         --set with no LHS
+            --         return false, nil
+            --     end
+            elseif str == "func" then
 
                 advanceLexer()
 
-                if cat == lexit.VARID then
-
-                    good, ast = parse_lvalue()
-                    if not good then
-                        return false, nil
-                    end
-
-                    if str == ":" then
-
-                        advanceLexer()
-
-                        good, newast = parse_expr()
-                        if not good then
-                            return false, nil
-                        end
-
-                        return good, {SET_STMT, ast, newast}
-                    else
-                        --set with no : (assignment op)
-                        return false, nil
-                    end
-                 else
-                    --set with no LHS
-                    return false, nil
-                end
-            elseif str == "sub" then
-
-                advanceLexer()
-
-                if cat == lexit.SUBID then
+                if cat == lexit.ID then
 
                     save = str
                     advanceLexer()
@@ -422,7 +437,7 @@ end
 
                     advanceLexer()
 
-                    ast = {SUB_STMT, save, ast}
+                    ast = {FUNC_STMT, save, ast}
 
                     return good, ast
 
@@ -433,14 +448,18 @@ end
 
                     advanceLexer()
 
-                    if cat == lexit.SUBID then
+                    if str == "call" then
+                      return false, nil
+                    end
 
-                        ast = {CALL_STMT, str}
+                    if cat == lexit.ID then
+
+                        ast = {CALL_FUNC, str}
                         advanceLexer()
                         return true, ast
-                    else
-                        return false, nil
                     end
+
+
                 elseif str == "if" then
 
                     advanceLexer()
@@ -503,6 +522,7 @@ end
                     end
 
                     good, newast = parse_stmt_list()
+
                     if not good then
                         return false, nil
                     end
@@ -528,6 +548,9 @@ end
         end
     end
 
+    function parse_print_arg()
+      return true, nil
+    end
 
     function parse_stmt_list()
 
