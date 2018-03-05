@@ -21,6 +21,11 @@ hoursToWords = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', \
 specialTimes = {0: "o'clock", 15: "quarter after", 30: "half past", 45: "quarter til"}
 
 timeName = ""
+minutesParam = 0
+hoursParam = 0
+
+def getInput():
+    return 0
 
 #getTimeName
 # params:
