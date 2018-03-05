@@ -30,7 +30,7 @@ timeName = ""
 #          of day written in plain english
 # Pre: -hours must be between 0 and 12
 #      -minutes must be between 1 and 60
-# Post: 
+# Post: timeName string is no longer empty
 def getTimeName(hours, minutes):
     if (minutes == 0 or minutes == 15 or minutes == 30 or minutes == 45) :
         if minutes == 0 :
@@ -50,7 +50,8 @@ def getTimeName(hours, minutes):
 
     return timeName
 
-
+#used to get input for hours from user
+# returns int
 def setHours():
     while True:
         hours = int(input("please enter the hours: "))
@@ -59,7 +60,8 @@ def setHours():
         else:
             print("please enter a valid input")
     
-
+#Used to get input for minutes from user
+# returns int
 def setMins():
     while True:
         minutes = int(input("please enter the minutes: "))
