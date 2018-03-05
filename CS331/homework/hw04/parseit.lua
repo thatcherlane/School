@@ -1,8 +1,7 @@
 --Thatcher Lane
---
---
---
---
+--CS 331
+--Assignment 4 - Parseit
+--03/04/18
 
 local parseit = {}
 lexit = require "lexit"
