@@ -1,0 +1,150 @@
+%!
+%%Draws box
+/inch {72 mul} def
+
+
+%%Pages: 6
+
+%%Page: 1 1
+newpath
+1 inch 1 inch moveto
+2 inch 1 inch lineto
+2 inch 2 inch lineto
+1 inch 2 inch lineto
+
+stroke
+showpage
+
+%%Page: 2 2
+% Example of rotation... draws 36 lines in a circular pattern
+
+0 10 360 {              % Go from 0 to 360 degrees in 10 degree steps
+  newpath               % Start a new path
+
+  /length 10 def
+
+  gsave                 % Keep rotations temporary
+
+    144 144 moveto
+    dup
+    rotate             % Rotate by degrees on stack from 'for'
+    72 add 0 rlineto
+    stroke
+
+  grestore              % Get back the unrotated state
+
+
+
+
+} for                   % Iterate over angles
+
+
+showpage
+
+%%Page: 3 3
+% operator box: xcoord ycoord box -
+% Creates one inch box at xcoord, ycoord
+/box {
+   newpath
+   moveto
+   72 0 rlineto
+   0 72 rlineto
+   -72 0 rlineto
+   closepath
+} def
+
+/array [0 0 0 100 0 200 ] def
+
+gsave                           % Preserve the old coordinates
+  72 72 translate               % Set origin to (72, 72)
+  array 0 get array 1 get box stroke                % Draw the box at the new origin
+  array 2 get array 3 get box stroke
+  array 4 get array 5 get box stroke
+grestore                        % Restore the old coordinates
+
+showpage
+
+%%Page: 4 4
+% Demonstrate shading and width in drawing lines and filling shapes
+
+% Define an operator box which builds a path for a one inch square box
+% Note that box does not draw or fill the box.
+
+/box {
+  newpath
+  moveto                                % Current point is on stack
+  0 72 rlineto                          % Left
+  72 0 rlineto                          % Top
+  0 -72 rlineto                         % Right
+  closepath                             % Bottom
+} def
+
+0 setgray                               % 100% black
+1 setlinewidth                          % One point thick lines
+72 72 moveto 72 144 lineto stroke       % Draw a one inch line
+
+gsave                                   % Save a copy of the current settings
+  0.5 setgray                           % 50% black
+  10 setlinewidth                       % 10 point wide lines
+  144 72 moveto 144 144 lineto stroke   % Draw a one inch wide line
+  216 72 box                            % Build a square path...
+  0.35 setgray                          %   make it a little darker...
+  fill                                  %   and fill it.
+grestore                                % Go back to the original settings
+
+
+
+
+  1 setlinewidth                          % Make the box lines wider
+  300 72 box stroke                       % Draw a black box
+
+showpage
+
+%%Page: 5 5
+
+% Demonstrate shading and width in drawing lines and filling shapes
+
+% Define an operator box which builds a path for a one inch square box
+% Note that box does not draw or fill the box.
+
+/box {
+  newpath
+  moveto                                % Current point is on stack
+  0 72 rlineto                          % Left
+  72 0 rlineto                          % Top
+  0 -72 rlineto                         % Right
+  closepath                             % Bottom
+} def
+
+0 setgray                               % 100% black
+1 setlinewidth                          % One point thick lines
+72 72 moveto 72 144 lineto stroke       % Draw a one inch line
+
+gsave                                   % Save a copy of the current settings
+  0.5 setgray                           % 50% black
+  10 setlinewidth                       % 10 point wide lines
+  144 72 moveto 144 144 lineto stroke   % Draw a one inch wide line
+  216 72 box                            % Build a square path...
+  0.35 setgray                          %   make it a little darker...
+  fill                                  %   and fill it.
+grestore                                % Go back to the original settings
+
+  1 setlinewidth                          % Make the box lines wider
+  300 72 box stroke                       % Draw a black box
+
+  30 rotate
+  310 -110 box stroke
+  30 rotate
+  220 -270 box stroke
+
+showpage
+
+%%Page: 6 6
+72 72 60 0 360 arc closepath
+stroke
+72 172 40 0 360 arc closepath
+stroke
+72 232 20 0 360 arc closepath
+stroke
+
+showpage
