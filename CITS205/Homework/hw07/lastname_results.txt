@@ -1,0 +1,5 @@
+# of entries: 501
+# of emails ending in .jp: 26
+# of emails ending in .uk: 20
+# of emails ending in .de: 8
+The duplicate surnames are: ['Culbard', 'Schiell', 'Wisbey']
