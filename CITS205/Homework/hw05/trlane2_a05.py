@@ -20,17 +20,17 @@ hoursToWords = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', \
 
 specialTimes = {0: "o'clock", 15: "quarter after", 30: "half past", 45: "quarter til"}
 
-timeName = ""
-minutesParam = 0
-hoursParam = 0
 
-def getInput():
-    return 0
+timeName = ""
 
 #getTimeName
-# params:
-# return:
-#
+# params: hours - the hour of the time
+#         minutes - the minutes of the time
+# returns: returns a string that is the time
+#          of day written in plain english
+# Pre: -hours must be between 0 and 12
+#      -minutes must be between 1 and 60
+# Post: timeName string is no longer empty
 def getTimeName(hours, minutes):
     if (minutes == 0 or minutes == 15 or minutes == 30 or minutes == 45) :
         if minutes == 0 :
@@ -50,7 +50,28 @@ def getTimeName(hours, minutes):
 
     return timeName
 
+#used to get input for hours from user
+# returns int
+def setHours():
+    while True:
+        hours = int(input("please enter the hours: "))
+        if hours > 0 and hours < 13:
+            return hours
+        else:
+            print("please enter a valid input")
+    
+#Used to get input for minutes from user
+# returns int
+def setMins():
+    while True:
+        minutes = int(input("please enter the minutes: "))
+        if minutes >= 0 and minutes <= 59:
+            return minutes
+        else:
+            print("please enter a valid input")
 
-thing = getTimeName(12, 58)
-print(thing)
+hoursParam = setHours()
+minutesParam = setMins()
+result = getTimeName(hoursParam, minutesParam)
+print(result)
 
