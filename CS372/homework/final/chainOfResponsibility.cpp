@@ -8,6 +8,7 @@
 #include <ctime>
 
 class Base {
+private:
   Base *next;
 public:
   Base() {
@@ -32,12 +33,12 @@ public:
 class Handler1: public Base {
 public:
   void handle(int i) {
-    if(rand() % 3) {
-      std::cout << "h1 passed " << i << " ";
+    if(rand() % 4) {
+      std::cout << "handler1 passed " << i << " ";
       Base::handle(i);
     }
     else {
-      std::cout << "h1 handled " << i << " ";
+      std::cout << "handler1 handled " << i << " ";
     }
   }
 };
@@ -46,11 +47,11 @@ class Handler2: public Base {
 public:
   void handle(int i) {
     if(rand() % 3) {
-      std::cout << "h2 passed " << i << " ";
+      std::cout << "handler2 passed " << i << " ";
       Base::handle(i);
     }
     else {
-      std::cout << "h2 handled " << i << " ";
+      std::cout << "handler2 handled " << i << " ";
     }
   }
 };
@@ -58,26 +59,29 @@ public:
 class Handler3: public Base {
 public:
   void handle(int i) {
-    if(rand() % 3) {
-      std::cout << "h3 passed " << i << " ";
+    if(rand() % 2) {
+      std::cout << "handler3 passed " << i << " ";
       Base::handle(i);
     }
     else {
-      std::cout << "h3 handled " << i << " ";
+      std::cout << "handler3 handled " << i << " ";
     }
   }
 };
 
 int main() {
   srand(std::time(0));
-  Handler1 root;
+
+  Handler1 one;
   Handler2 two;
-  Handler3 thr;
-  root.add(&two);
-  root.add(&thr);
-  thr.setNext(&root);
-  for (int i = 1; i < 10; i++){
-    root.handle(i);
+  Handler3 three;
+
+  one.add(&two);
+  one.add(&three);
+  three.setNext(&one);
+  
+  for (int i = 1; i < 5; i++){
+    one.handle(i);
     std::cout << "\n";
   }
 }
